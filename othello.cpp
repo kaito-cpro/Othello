@@ -22,8 +22,8 @@ using namespace std;
 
 #define is_inboard(x, y) (x>=1 && x<=8 && y>=1 && y<=8)
 
-int v[10][10];  //v[1][1]~v[8][8]‚ğg‚¤
-int player = 1;
+int v[10][10];  //v[1][1]~v[8][8]ã‚’ä½¿ã†
+int player;
 int point_human = 2, point_com = 2;
 
 void rule();
@@ -34,7 +34,7 @@ void disp_board();
 int choose_square();
 void after_choose_square(int);
 bool is_putable(int, int, int);
-bool or_path(int);
+bool or_pass(int);
 void turn_stone(int, int);
 void point_sum();
 void human();
@@ -53,9 +53,9 @@ int main(){
    rule();
    rand_set();
    disp_board();
-   while (!or_path(1) || !or_path(2)){
+   while (!or_pass(1) || !or_pass(2)){
       human();
-      if (!or_path(1) || !or_path(2)) computer();
+      if (!or_pass(1) || !or_pass(2)) computer();
       else break;
    }
    point_sum();
@@ -82,7 +82,7 @@ void rand_set(){
    cin.ignore();
    clock_t end = clock();
    for (int i = 0; i < (end-start)/10; i++){
-      GetRandom(1, 8);
+      GetRandom(11, 88);
    }
 }
 
@@ -163,8 +163,8 @@ bool is_putable(int x, int y, int player){
 }
 
 
-//path‚·‚é‚µ‚©‚È‚¢ê‡‚Étrue‚ğ•Ô‚·
-bool or_path(int player){
+//passã™ã‚‹ã—ã‹ãªã„å ´åˆã«trueã‚’è¿”ã™
+bool or_pass(int player){
    for (int x = 1; x <= 8; x++){
       for (int y = 1; y <= 8; y++){
          if (is_putable(x, y, player)) return false;
@@ -209,7 +209,7 @@ void point_sum(){
 
 void human(){
    player = 1;
-   if (or_path(1)){
+   if (or_pass(1)){
       printf(">>Player 1: You\n path\n");
       return;
    }
@@ -220,7 +220,7 @@ void human(){
 
 void computer(){
    player = 2;
-   if (or_path(2)){
+   if (or_pass(2)){
       printf(">>Player 2: Computer\n path\n");
       return;
    }
