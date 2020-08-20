@@ -8,7 +8,7 @@ int BOARD_SIZE = 8;  // <- must be even number!
 vector<char> STONE{'-', 'O', 'X'};
 vector<string> PLAYER{"", "You", "Computer"};
 
-// 盤面の初期化
+// 初期化
 void init(vv& board, bool set_data=false) {
     if (set_data) {
         bool ok;
@@ -50,8 +50,6 @@ void init(vv& board, bool set_data=false) {
     assert(BOARD_SIZE % 2 == 0);
     board[BOARD_SIZE/2][BOARD_SIZE/2] = board[BOARD_SIZE/2 + 1][BOARD_SIZE/2 + 1] = HUMAN;
     board[BOARD_SIZE/2][BOARD_SIZE/2 + 1] = board[BOARD_SIZE/2 + 1][BOARD_SIZE/2] = COMPUTER;
-
-    STONE[HUMAN] = 'O';  STONE[COMPUTER] = 'X';  STONE[SPACE] = '-';
 }
 
 // 石の個数の集計
@@ -136,6 +134,34 @@ bool can_put(P pos, vv board, int turn) {
         }
     }
     return false;
+}
+
+// 終了判定
+bool ended(vv board) {
+    // いずれかのプレイヤーが置ける座標が存在するかどうか
+    bool res = true;
+    for (int x = 1; x <= BOARD_SIZE; ++x) {
+        for (int y = 1; y <= BOARD_SIZE; ++y) {
+            if (board[x][y] == SPACE) {
+                for (int dx = -1; dx <= 1; ++dx) {
+                    for (int dy = -1; dy <= 1; ++dy) {
+                        if (dx == 0 && dy == 0) continue;
+                        int nx = x + dx, ny = y + dy;
+                        P npos = P(nx, ny);
+                        if (!is_in_board(npos, board) || board[nx][ny] == SPACE) continue;
+                        nx += dx, ny += dy;
+                        npos = P(nx, ny);
+                        while (is_in_board(npos, board) && board[nx][ny] == board[nx - dx][ny - dy]) {
+                            nx += dx, ny += dy;
+                            npos = P(nx, ny);
+                        }
+                        if (is_in_board(npos, board) && board[nx][ny] != SPACE) res = false;
+                    }
+                }
+            }
+        }
+    }
+    return res;
 }
 
 // ランダムな座標を生成
@@ -228,34 +254,6 @@ void pass(int turn) {
     cout << ">>Player " << turn << ": " << PLAYER[turn] << " pass" << endl << endl;
 }
 
-// 終了判定
-bool ended(vv board) {
-    // いずれかのプレイヤーが置ける座標が存在するかどうか
-    bool res = true;
-    for (int x = 1; x <= BOARD_SIZE; ++x) {
-        for (int y = 1; y <= BOARD_SIZE; ++y) {
-            if (board[x][y] == SPACE) {
-                for (int dx = -1; dx <= 1; ++dx) {
-                    for (int dy = -1; dy <= 1; ++dy) {
-                        if (dx == 0 && dy == 0) continue;
-                        int nx = x + dx, ny = y + dy;
-                        P npos = P(nx, ny);
-                        if (!is_in_board(npos, board) || board[nx][ny] == SPACE) continue;
-                        nx += dx, ny += dy;
-                        npos = P(nx, ny);
-                        while (is_in_board(npos, board) && board[nx][ny] == board[nx - dx][ny - dy]) {
-                            nx += dx, ny += dy;
-                            npos = P(nx, ny);
-                        }
-                        if (is_in_board(npos, board) && board[nx][ny] != SPACE) res = false;
-                    }
-                }
-            }
-        }
-    }
-    return res;
-}
-
 // 手番をプレイ
 void play(vv& board, int turn) {
     // 置ける座標が存在するかどうか
@@ -274,8 +272,8 @@ void play(vv& board, int turn) {
 }
 
 int main() {
-    vv board;  // 盤面(init() でリサイズする); 0: 空白, 1: Human, 2: Computer
-    int turn = 1;  // 手番; 1: Human, 2: Computer
+    vv board;  // 盤面(<- init() 内でリサイズする)
+    int turn = HUMAN;  // 手番
 
     show_rule();
     init(board, true);
@@ -283,7 +281,7 @@ int main() {
     while (!ended(board)) {
         show_board(board);
         play(board, turn);
-        turn = 3 - turn;  // 手番の交代
+        turn = (turn==HUMAN ? COMPUTER : HUMAN);  // 手番の交代
     }
     show_result(board);
 }
